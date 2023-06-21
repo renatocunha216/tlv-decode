@@ -1,7 +1,10 @@
 package br.com.rbcti.tlv;
 
+import static br.com.rbcti.tlv.TagTLV.BYTE_LENGTH_FLAG;
+import static br.com.rbcti.tlv.TagTLV.BYTE_LENGTH_MASK;
 import static br.com.rbcti.tlv.TagTLV.CONSTRUCTED_DATA_OBJECT;
 import static br.com.rbcti.tlv.TagTLV.SECOND_BYTE_TAG_NUMBER;
+import static br.com.rbcti.tlv.ByteUtil.fromBigEndian;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +21,18 @@ import java.util.List;
  */
 public class DecodeTLV {
 
+    private static final int MAX_BYTE_LENGTH = 4;
+
     private List<TagTLV> tags;
+    private boolean strict;
+
+    public DecodeTLV() {
+        this.strict = false;
+    }
+
+    public DecodeTLV(boolean strict) {
+        this.strict = strict;
+    }
 
     public List<TagTLV> decode(byte[] data) throws DecodeTLVException {
 
@@ -37,12 +51,12 @@ public class DecodeTLV {
             }
 
             if ((tagId & SECOND_BYTE_TAG_NUMBER) == SECOND_BYTE_TAG_NUMBER) {
-                // Significa que o segundo byte também identifica a tag
+                // It means that the second byte also identifies the tag
                 tagId = (tagId << 8) + (data[offset] & 0xFF);
                 offset++;
 
                 if (data.length == offset) {
-                    throw new DecodeTLVException("Invalid TLV data. " + ByteUtil.encodeHexSpaced(new byte[] {data[offset-2], data[offset-1]}) + " tag without size field.");
+                    throw new DecodeTLVException("Invalid TLV data. " + ByteUtil.encodeHexSpaced(new byte[] {data[offset-2], data[offset-1]}) + " tag without length field.");
                 }
             }
 
@@ -50,34 +64,34 @@ public class DecodeTLV {
             int len = data[offset] & 0xFF;
             offset++;
 
-            if (len == 0x81) {
-                // Size 2 bytes
-                len = data[offset] & 0xFF;
+            if ((len & BYTE_LENGTH_FLAG) == BYTE_LENGTH_FLAG) {
+                int numberBytesLength = len & BYTE_LENGTH_MASK;
 
-                if (!(len >= 0x80 && len <= 0xFF)) {
-                    throw new DecodeTLVException("Object size field is invalid. Expected value 0x80 to 0xFF. Value read " + ByteUtil.encodeHex((byte)(len & 0xFF)));
+                if (numberBytesLength > MAX_BYTE_LENGTH) {
+                    throw new DecodeTLVException("Maximum size is 4 bytes.");
                 }
 
-            } else if (len == 0x82) {
-                // Size 3 bytes
-                len = data[offset] & 0xFF;
-                offset++;
-                len = (len << 8) + (data[offset] & 0xFF);
-                offset++;
+                byte[] lengthBytesArray = new byte[MAX_BYTE_LENGTH];
 
-                if (!(len >= 0x0100 && len <= 0xFFFF)) {
-                    throw new DecodeTLVException("Object size field is invalid. Expected value 0x0100 to 0xFFFF. Value read " + ByteUtil.encodeHex((byte) (len & 0xFF)));
+                System.arraycopy(data, offset, lengthBytesArray, (MAX_BYTE_LENGTH - numberBytesLength), numberBytesLength);
+
+                offset += numberBytesLength;
+
+                long lengthRead = fromBigEndian(lengthBytesArray);
+
+                if (lengthRead > Integer.MAX_VALUE) {
+                    throw new DecodeTLVException("The maximum value of the length field is " + Integer.MAX_VALUE);
                 }
 
-            } else if (!(len >= 0x00 && len <= 0x7F)) {
-                throw new DecodeTLVException("Object size field is invalid. Expected value 0x00 a 0x7F. Value read " + ByteUtil.encodeHex((byte) (len & 0xFF)));
+                len = (int) lengthRead;
             }
 
             if ((data.length - offset) < len) {
-                //throw new DecodeTLVException("Invalid data size.");
-                //System.out.println("WARN");
-                //Faz ajuste para tolerar TLV com erro no byte de tamanho, neste caso com tamanho
-                //maior que o conteúdo do array de bytes.
+                if (strict) {
+                    throw new DecodeTLVException("Invalid data length for " + tagId + " TAG.");
+                }
+
+                // fix the size when the content size is less than the value entered
                 len = data.length - offset;
             }
 
@@ -126,6 +140,17 @@ public class DecodeTLV {
         return findTagTLV(tags, tagTLV.getId());
     }
 
+    public static void printTagTLV(List<TagTLV> tags, int level, char decorateChar) {
+        for (TagTLV _tag : tags) {
+            char[] decorate = new char[level*2];
+            Arrays.fill(decorate, decorateChar);
+            System.out.println(String.valueOf(decorate) + _tag);
+            if ((_tag.getChildren() != null) && (_tag.getChildren().size() > 0)) {
+                printTagTLV(_tag.getChildren(), level+2, decorateChar);
+            }
+        }
+    }
+
     public static void __main(String[] args) {
 
         DecodeTLV decodeTLV = new DecodeTLV();
@@ -144,30 +169,21 @@ public class DecodeTLV {
 
     public static void main(String[] args) throws Exception {
 
-        DecodeTLV decodeTLV = new DecodeTLV();
+        DecodeTLV decodeTLV = new DecodeTLV(true);
 
-        //List<TagTLV>tags = parser.parse(ByteUtil.decodeHex("61 13   4F 05 F0 00 00 01 03    50 0A    4D 55 4C 54 4F 53 20 41 70 70    85 04 08 00 00 08  86 04 00 00 00 00 "));
-        List<TagTLV>tags = decodeTLV.decode(ByteUtil.decodeHex(
-        "6F 35 84 08 45 4F 50 43 43 41 52 44 A5 29 50 06 55 5A 4B 41 52 54 5F 2D 06 75 7A 72 75 65 6E 87 01 01 9F 11 01 01 9F 12 06 55 5A 4B 41 52 54 BF 0C 05 9F 4D 02 0B 0A"
-                ));
+        //List<TagTLV>tags = decodeTLV.decode(ByteUtil.decodeHex("61 13   4F 05 F0 00 00 01 03    50 0A    4D 55 4C 54 4F 53 20 41 70 70    85 04 08 00 00 08  86 04 00 00 00 00 "));
+        //List<TagTLV>tags = decodeTLV.decode(ByteUtil.decodeHex(
+        //"6F 35 84 08 45 4F 50 43 43 41 52 44 A5 29 50 06 55 5A 4B 41 52 54 5F 2D 06 75 7A 72 75 65 6E 87 01 01 9F 11 01 01 9F 12 06 55 5A 4B 41 52 54 BF 0C 05 9F 4D 02 0B 0A"
+        //        ));
+
+        List<TagTLV>tags = decodeTLV.decode(ByteUtil.decodeHex("01 81 03 c1 c2 c3"));
 
         tags = decodeTLV.getTags();
         printTagTLV(tags, 2, '-');
 
-        TagTLV tagTLV = findTagTLV(tags, TagTLVEnum.LOG_ENTRY.getId());
+        // TagTLV tagTLV = findTagTLV(tags, TagTLVEnum.LOG_ENTRY.getId());
 
-        System.out.println("::" + tagTLV);
-    }
-
-    public static void printTagTLV(List<TagTLV> tags, int level, char decorateChar) {
-        for (TagTLV _tag : tags) {
-            char[] decorate = new char[level*2];
-            Arrays.fill(decorate, decorateChar);
-            System.out.println(String.valueOf(decorate) + _tag);
-            if ((_tag.getChildren() != null) && (_tag.getChildren().size() > 0)) {
-                printTagTLV(_tag.getChildren(), level+2, decorateChar);
-            }
-        }
+        //System.out.println("::" + tagTLV);
     }
 
 }

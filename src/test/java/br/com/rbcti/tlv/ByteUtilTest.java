@@ -48,4 +48,9 @@ public class ByteUtilTest {
         assertEquals(Arrays.equals(decodeHex(SAMPLE3_STRING), SAMPLE3_BYTES), true);
     }
 
+    @Test
+    public void testFromBigEndian() {
+
+    }
+
 }

@@ -71,5 +71,14 @@ public class ByteUtil {
         return data;
     }
 
+    public static long fromBigEndian(byte[] buffer) {
+        long value = 0L;
+
+        for (int ct = 0; ct < buffer.length; ct++) {
+            value |= (buffer[buffer.length - ct - 1] & 0xFFL) << (8L * ct);
+        }
+
+        return value & 0xFFFFFFFFFFFFFFL;
+    }
 
 }

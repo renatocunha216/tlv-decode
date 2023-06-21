@@ -31,6 +31,10 @@ public class TagTLV implements Serializable {
      */
     public static final int SECOND_BYTE_TAG_NUMBER = 0x1F;
 
+    public static final int BYTE_LENGTH_FLAG = 0X80;
+
+    public static final int BYTE_LENGTH_MASK = 0X7F;
+
     private int tagId;
     private int tagIdFirstByte;
     private byte[] dataObject;
