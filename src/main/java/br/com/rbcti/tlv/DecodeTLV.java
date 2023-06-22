@@ -167,7 +167,7 @@ public class DecodeTLV {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void _main(String[] args) throws Exception {
 
         DecodeTLV decodeTLV = new DecodeTLV(true);
 
@@ -185,5 +185,27 @@ public class DecodeTLV {
 
         //System.out.println("::" + tagTLV);
     }
+
+    public static void main(String[] args) {
+
+        final boolean STRICT_MODE = true;
+
+        DecodeTLV decodeTLV = new DecodeTLV(STRICT_MODE);
+
+        try {
+            List<TagTLV> tags = decodeTLV.decode(ByteUtil.decodeHex("6F 1E A5 1C 50 06 41 70 70 54 73 74 5F 2D 09 50 6F 72 74 75 67 75 65 73 BF 0C 05 9F 4D 02 0B 0A"));
+            DecodeTLV.printTagTLV(tags, 1, '-');
+
+            TagTLV logEntry = DecodeTLV.findTagTLV(tags, TagTLVEnum.LOG_ENTRY);
+            System.out.println("");
+            System.out.println(logEntry);
+
+        } catch (DecodeTLVException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
 
 }
