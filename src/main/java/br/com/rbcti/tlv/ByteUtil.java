@@ -72,13 +72,22 @@ public class ByteUtil {
     }
 
     public static long fromBigEndian(byte[] buffer) {
+
+        if (buffer == null) {
+            throw new NullPointerException("buffer is null.");
+        }
+
+        if ((buffer.length > 8) || (buffer.length == 0)) {
+            throw new IllegalArgumentException("invalid buffer length.");
+        }
+
         long value = 0L;
 
         for (int ct = 0; ct < buffer.length; ct++) {
             value |= (buffer[buffer.length - ct - 1] & 0xFFL) << (8L * ct);
         }
 
-        return value & 0xFFFFFFFFFFFFFFL;
+        return value & 0xFFFFFFFFFFFFFFFFL;
     }
 
 }
