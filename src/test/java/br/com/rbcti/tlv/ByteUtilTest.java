@@ -2,7 +2,9 @@ package br.com.rbcti.tlv;
 
 import static br.com.rbcti.tlv.ByteUtil.decodeHex;
 import static br.com.rbcti.tlv.ByteUtil.encodeHex;
+import static br.com.rbcti.tlv.ByteUtil.fromBigEndian;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertThrows;
 
 import java.util.Arrays;
 
@@ -51,6 +53,38 @@ public class ByteUtilTest {
     @Test
     public void testFromBigEndian() {
 
+        byte[] minInt = new byte[] {(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x80, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+        byte[] maxInt = new byte[] {(byte) 0x7f, (byte) 0xff, (byte) 0xff, (byte) 0xff};
+        byte[] minLong = new byte[] {(byte) 0x80, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+        byte[] maxLong = new byte[] {(byte) 0x7f, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff};
+        byte[] zeroLong = new byte[8];
+
+        long zeroNumber = fromBigEndian(zeroLong);
+
+        long minIntegerNumber = fromBigEndian(minInt);
+        long maxIntegerNumber = fromBigEndian(maxInt);
+
+        long minLongNumber = fromBigEndian(minLong);
+        long maxLongNumber = fromBigEndian(maxLong);
+
+        assertEquals(minIntegerNumber, Long.valueOf(Integer.MIN_VALUE).longValue());
+        assertEquals(maxIntegerNumber, Long.valueOf(Integer.MAX_VALUE).longValue());
+
+        assertEquals(minLongNumber, Long.MIN_VALUE);
+        assertEquals(maxLongNumber, Long.MAX_VALUE);
+
+        assertEquals(zeroNumber, 0L);
+    }
+
+    @Test
+    public void testFromBigEndianThrowException() {
+
+        byte[] zeroBytes = new byte[0];
+        byte[] nineBytes = new byte[9];
+
+        assertThrows(NullPointerException.class, () -> fromBigEndian(null));
+        assertThrows(IllegalArgumentException.class, () -> fromBigEndian(zeroBytes));
+        assertThrows(IllegalArgumentException.class, () -> fromBigEndian(nineBytes));
     }
 
 }
