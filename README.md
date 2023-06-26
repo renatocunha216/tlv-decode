@@ -1,6 +1,6 @@
 # tlv-decode
 
-Implementação em java do padrão de codificação de dados BER-TLV.<br>
+Implementação em java de um decodificador de dados codificados no formato BER-TLV.<br>
 
 **T** - Tag - Um ou mais bytes que definem a classe o tipo e numero de bytes da tag.<br>
 **L** - Length - Um ou mais bytes que definem o tamanho do campo valor.<br>
