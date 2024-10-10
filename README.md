@@ -63,3 +63,28 @@ Saída
 
 TagTLV [tagId=40781, description=LOG_ENTRY, dataObject=0b 0a, dataObjectAsString=]
 ```
+
+### Construção
+
+`mvn clean package`<br>
+
+Antes configure o arquivo **~/.m2/toolchains.xml** conforme exemplo abaixo.<br>
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<toolchains>
+
+    <toolchain>
+        <type>jdk</type>
+        <provides>
+            <id>Java8</id>
+            <version>1.8</version>
+            <vendor>oraclejdk</vendor>
+        </provides>
+        <configuration>
+            <jdkHome>${env.JAVA_HOME_8}</jdkHome>
+        </configuration>
+    </toolchain>
+	
+</toolchains>
+```
