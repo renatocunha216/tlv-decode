@@ -56,7 +56,7 @@ public class DecodeTLV {
                 offset++;
 
                 if (data.length == offset) {
-                    throw new DecodeTLVException("Invalid TLV data. " + ByteUtil.encodeHexSpaced(new byte[] {data[offset-2], data[offset-1]}) + " tag without length field.");
+                    throw new DecodeTLVException("Invalid TLV data. " + ByteUtil.encodeHexSpaced(new byte[] { data[offset - 2], data[offset - 1] }) + " tag without length field.");
                 }
             }
 
@@ -110,7 +110,7 @@ public class DecodeTLV {
                 }
             }
 
-        } while(offset != data.length);
+        } while (offset != data.length);
 
         this.tags = tags;
 
@@ -142,11 +142,11 @@ public class DecodeTLV {
 
     public static void printTagTLV(List<TagTLV> tags, int level, char decorateChar) {
         for (TagTLV _tag : tags) {
-            char[] decorate = new char[level*2];
+            char[] decorate = new char[level * 2];
             Arrays.fill(decorate, decorateChar);
             System.out.println(String.valueOf(decorate) + _tag);
             if ((_tag.getChildren() != null) && (_tag.getChildren().size() > 0)) {
-                printTagTLV(_tag.getChildren(), level+2, decorateChar);
+                printTagTLV(_tag.getChildren(), level + 2, decorateChar);
             }
         }
     }
