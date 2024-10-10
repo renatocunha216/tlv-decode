@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>br.com.rbcti.tlv</groupId>
@@ -7,23 +9,41 @@
     <packaging>jar</packaging>
     <name>tlv-decode</name>
     <description>TLV decode.</description>
-    
+
     <properties>
-        <javase-release>11</javase-release>        
+        <javase-release>8</javase-release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <dependencies>        
+    <organization>
+        <name>RBC TI</name>
+        <url>http://www.rbcti.com.br</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>renato.cunha</id>
+            <name>Renato Barbosa da Cunha</name>
+            <email>renato.cunha@xyz.com.br</email>
+            <organization>RBC TI</organization>
+            <organizationUrl>http://www.rbcti.com.br</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <dependencies>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.9.10</version>
+            <version>7.5.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
-            <version>3.2</version>
+            <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -33,15 +53,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <release>${javase-release}</release>
                 </configuration>
-            </plugin>        
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>                
+                <version>3.4.2</version>
             </plugin>
         </plugins>
     </build>
